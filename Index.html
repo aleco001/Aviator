@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Bot Simulation (Educational)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #0f3460;
+        }
+        
+        .header h1 {
+            color: #4cc9f0;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.3);
+        }
+        
+        .warning {
+            background: rgba(255, 87, 51, 0.1);
+            border: 1px solid #ff5733;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 800px;
+            text-align: center;
+        }
+        
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel h2 {
+            color: #4cc9f0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .game-display {
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .multiplier-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            font-weight: bold;
+            color: #4cc9f0;
+            text-shadow: 0 0 20px rgba(76, 201, 240, 0.5);
+        }
+        
+        .multiplier-label {
+            position: absolute;
+            top: 65%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: #aaa;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        label {
+            color: #4cc9f0;
+            font-weight: 500;
+        }
+        
+        input, select, button {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4cc9f0, #4361ee);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .balance-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4cc9f0;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4cc9f0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .log-win {
+            color: #4CAF50;
+        }
+        
+        .log-loss {
+            color: #f44336;
+        }
+        
+        .log-info {
+            color: #4cc9f0;
+        }
+        
+        .strategies {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .strategy-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .strategy-card:hover {
+            transform: translateY(-5px);
+            border-color: #4cc9f0;
+        }
+        
+        .strategy-card.active {
+            border-color: #4cc9f0;
+            background: rgba(76, 201, 240, 0.1);
+        }
+        
+        .strategy-name {
+            color: #4cc9f0;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .strategy-desc {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Aviator Bot Simulation</h1>
+
+        </div>
+        
+        <div class="game-area">
+            <div class="panel">
+                <h2>Game Display</h2>
+                <div class="game-display" id="gameDisplay">
+                    <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
+                    <div class="multiplier-label">Current Multiplier</div>
+                </div>
+                
+                <div class="balance-display">
+                    Balance: $<span id="balanceDisplay">1000.00</span>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="gamesPlayed">0</div>
+                        <div class="stat-label">Games Played</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="winsCount">0</div>
+                        <div class="stat-label">Wins</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="lossesCount">0</div>
+                        <div class="stat-label">Losses</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="profitDisplay">0.00</div>
+                        <div class="stat-label">Total Profit</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2>Bot Controls</h2>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="betAmount">Bet Amount ($)</label>
+                        <input type="number" id="betAmount" min="1" max="1000" value="10" step="1">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="autoCashout">Auto Cashout (Multiplier)</label>
+                        <input type="number" id="autoCashout" min="1.1" max="100" value="2.0" step="0.1">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="botStrategy">Bot Strategy</label>
+                        <select id="botStrategy">
+                            <option value="conservative">Conservative (Low Risk)</option>
+                            <option value="moderate" selected>Moderate (Balanced)</option>
+                            <option value="aggressive">Aggressive (High Risk)</option>
+                            <option value="random">Random Strategy</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="gamesToPlay">Number of Games to Play</label>
+                        <input type="number" id="gamesToPlay" min="1" max="1000" value="50">
+                    </div>
+                    
+                    <button id="startBtn">🚀 Start Auto-Play</button>
+                    <button id="stopBtn" disabled>⏹️ Stop Auto-Play</button>
+                    <button id="resetBtn">🔄 Reset Simulation</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Game Log</h2>
+            <div class="log" id="gameLog">
+                <div class="log-entry log-info">Welcome to Aviator Bot Simulation</div>
+                <div class="log-entry log-info">Set your parameters and click "Start Auto-Play"</div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Strategy Descriptions</h2>
+            <div class="strategies">
+                <div class="strategy-card" data-strategy="conservative">
+                    <div class="strategy-name">Conservative</div>
+                    <div class="strategy-desc">Cashes out early (1.5x-2x). Low risk, frequent small wins.</div>
+                </div>
+                <div class="strategy-card active" data-strategy="moderate">
+                    <div class="strategy-name">Moderate</div>
+                    <div class="strategy-desc">Balanced approach (2x-3x). Mix of risk and reward.</div>
+                </div>
+                <div class="strategy-card" data-strategy="aggressive">
+                    <div class="strategy-name">Aggressive</div>
+                    <div class="strategy-desc">Aims for big wins (3x-10x). High risk, high reward.</div>
+                </div>
+                <div class="strategy-card" data-strategy="random">
+                    <div class="strategy-name">Random</div>
+                    <div class="strategy-desc">Random cashout decisions. Unpredictable results.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AviatorGame {
+            constructor() {
+                this.currentMultiplier = 1.0;
+                this.gameActive = false;
+                this.crashPoint = null;
+                this.gameStartTime = null;
+            }
+            
+            generateCrashPoint() {
+                // Using a simplified crash point generation algorithm
+                // Higher multipliers are exponentially less likely
+                const r = Math.random();
+                
+                // Adjust these probabilities for desired game behavior
+                if (r < 0.4) return 1 + Math.random() * 1;      // 40%: 1x-2x
+                if (r < 0.7) return 2 + Math.random() * 3;      // 30%: 2x-5x
+                if (r < 0.9) return 5 + Math.random() * 5;      // 20%: 5x-10x
+                if (r < 0.98) return 10 + Math.random() * 40;   // 8%: 10x-50x
+                return 50 + Math.random() * 150;                // 2%: 50x-200x
+            }
+            
+            startGame() {
+                this.gameActive = true;
+                this.currentMultiplier = 1.0;
+                this.crashPoint = this.generateCrashPoint();
+                this.gameStartTime = Date.now();
+                return this.crashPoint;
+            }
+            
+            update() {
+                if (!this.gameActive || this.crashPoint === null) {
+                    return { multiplier: 1.0, crashed: false };
+                }
+                
+                const elapsed = (Date.now() - this.gameStartTime) / 1000;
+                
+                // Exponential growth with randomness
+                const growthRate = 0.3 + Math.random() * 0.2;
+                this.currentMultiplier = 1.0 + Math.pow(elapsed, 1.5) * growthRate;
+                
+                // Check for crash
+                const crashed = this.currentMultiplier >= this.crashPoint;
+                if (crashed) {
+                    this.currentMultiplier = this.crashPoint;
+                    this.gameActive = false;
+                }
+                
+                return {
+                    multiplier: this.currentMultiplier,
+                    crashed: crashed,
+                    crashPoint: this.crashPoint
+                };
+            }
+            
+            forceCrash() {
+                this.gameActive = false;
+                return this.crashPoint;
+            }
+        }
+
+        class AviatorBot {
+            constructor(initialBalance = 1000.0) {
+                this.balance = initialBalance;
+                this.betAmount = 10.0;
+                this.autoCashout = 2.0;
+                this.currentBet = 0.0;
+                this.isPlaying = false;
+                this.strategy = 'moderate';
+                
+                this.stats = {
+                    gamesPlayed: 0,
+                    wins: 0,
+                    losses: 0,
+                    totalProfit: 0.0,
+                    highestWin: 0.0,
+                    highestMultiplier: 1.0
+                };
+            }
+            
+            placeBet(amount) {
+                if (amount <= this.balance) {
+                    this.currentBet = amount;
+                    this.balance -= amount;
+                    this.isPlaying = true;
+                    return true;
+                }
+                return false;
+            }
+            
+            cashOut(currentMultiplier) {
+                if (!this.isPlaying || this.currentBet === 0) {
+                    return 0.0;
+                }
+                
+                const winnings = this.currentBet * currentMultiplier;
+                this.balance += winnings;
+                const profit = winnings - this.currentBet;
+                
+                // Update stats
+                this.stats.gamesPlayed++;
+                if (profit > 0) {
+                    this.stats.wins++;
+                    this.stats.totalProfit += profit;
+                    if (winnings > this.stats.highestWin) {
+                        this.stats.highestWin = winnings;
+                    }
+                } else {
+                    this.stats.losses++;
+                    this.stats.totalProfit += profit; // profit is negative here
+                }
+                
+                if (currentMultiplier > this.stats.highestMultiplier) {
+                    this.stats.highestMultiplier = currentMultiplier;
+                }
+                
+                // Reset
+                this.isPlaying = false;
+                this.currentBet = 0.0;
+                
+                return winnings;
+            }
+            
+            shouldCashOut(currentMultiplier) {
+                // Base auto-cashout logic
+                if (currentMultiplier >= this.autoCashout) {
+                    return true;
+                }
+                
+                // Strategy-based logic
+                switch(this.strategy) {
+                    case 'conservative':
+                        // Cash out early, sometimes randomly at low multipliers
+                        if (currentMultiplier > 1.3 && Math.random() < 0.3) return true;
+                        if (currentMultiplier > 1.8) return true;
+                        break;
+                        
+                    case 'moderate':
+                        // Sometimes cash out early, sometimes hold for more
+                        if (currentMultiplier > 2.5 && Math.random() < 0.2) return true;
+                        if (currentMultiplier > 3.0) return true;
+                        break;
+                        
+                    case 'aggressive':
+                        // Hold for higher multipliers, but sometimes get scared
+                        if (currentMultiplier > 5.0 && Math.random() < 0.1) return true;
+                        if (currentMultiplier > 8.0) return true;
+                        break;
+                        
+                    case 'random':
+                        // Completely random decisions
+                        if (currentMultiplier > 1.5 && Math.random() < 0.4) return true;
+                        break;
+                }
+                
+                return false;
+            }
+            
+            updateStrategy(newStrategy) {
+                this.strategy = newStrategy;
+                
+                // Adjust parameters based on strategy
+                switch(newStrategy) {
+                    case 'conservative':
+                        this.autoCashout = 1.8;
+                        this.betAmount = Math.min(this.betAmount, this.balance * 0.02);
+                        break;
+                    case 'moderate':
+                        this.autoCashout = 2.5;
+                        this.betAmount = Math.min(this.betAmount, this.balance * 0.05);
+                        break;
+                    case 'aggressive':
+                        this.autoCashout = 5.0;
+                        this.betAmount = Math.min(this.betAmount, this.balance * 0.1);
+                        break;
+                    case 'random':
+                        this.autoCashout = 2.0 + Math.random() * 8;
+                        break;
+                }
+            }
+            
+            adjustBetting() {
+                // Simple bankroll management
+                const maxBetPercent = {
+                    'conservative': 0.02,
+                    'moderate': 0.05,
+                    'aggressive': 0.1,
+                    'random': 0.05
+                }[this.strategy];
+                
+                const maxBet = this.balance * maxBetPercent;
+                this.betAmount = Math.min(this.betAmount, maxBet);
+                
+                // Don't let bet go below 1
+                if (this.betAmount < 1) this.betAmount = 1;
+            }
+        }
+
+        // DOM Elements
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const multiplierDisplay = document.getElementById('multiplierDisplay');
+        const gamesPlayedEl = document.getElementById('gamesPlayed');
+        const winsCountEl = document.getElementById('winsCount');
+        const lossesCountEl = document.getElementById('lossesCount');
+        const profitDisplay = document.getElementById('profitDisplay');
+        const gameLog = document.getElementById('gameLog');
+        
+        const betAmountInput = document.getElementById('betAmount');
+        const autoCashoutInput = document.getElementById('autoCashout');
+        const botStrategySelect = document.getElementById('botStrategy');
+        const gamesToPlayInput = document.getElementById('gamesToPlay');
+        
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        const strategyCards = document.querySelectorAll('.strategy-card');
+        
+        // Game State
+        let game = new AviatorGame();
+        let bot = new AviatorBot(1000);
+        let autoPlayInterval = null;
+        let gamesPlayed = 0;
+        let targetGames = 50;
+        let isAutoPlaying = false;
+        
+        // Update UI
+        function updateUI() {
+            balanceDisplay.textContent = bot.balance.toFixed(2);
+            gamesPlayedEl.textContent = bot.stats.gamesPlayed;
+            winsCountEl.textContent = bot.stats.wins;
+            lossesCountEl.textContent = bot.stats.losses;
+            profitDisplay.textContent = bot.stats.totalProfit.toFixed(2);
+            
+            const gameState = game.update();
+            multiplierDisplay.textContent = gameState.multiplier.toFixed(2) + 'x';
+            
+            // Color coding for multiplier
+            if (gameState.multiplier >= 5) {
+                multiplierDisplay.style.color = '#4CAF50'; // Green for high multipliers
+            } else if (gameState.multiplier >= 2) {
+                multiplierDisplay.style.color = '#FF9800'; // Orange for medium multipliers
+            } else {
+                multiplierDisplay.style.color = '#4cc9f0'; // Blue for low multipliers
+            }
+        }
+        
+        // Add log entry
+        function addLog(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            gameLog.appendChild(logEntry);
+            gameLog.scrollTop = gameLog.scrollHeight;
+            
+            // Keep only last 50 log entries
+            const entries = gameLog.querySelectorAll('.log-entry');
+            if (entries.length > 50) {
+                entries[0].remove();
+            }
+        }
+        
+        // Play a single game
+        function playGame() {
+            if (isAutoPlaying && gamesPlayed >= targetGames) {
+                stopAutoPlay();
+                addLog(`Completed ${targetGames} games!`, 'info');
+                return;
+            }
+            
+            if (bot.balance < parseFloat(betAmountInput.value)) {
+                addLog('Insufficient balance to continue!', 'loss');
+                stopAutoPlay();
+                return;
+            }
+            
+            // Place bet
+            const betAmount = parseFloat(betAmountInput.value);
+            if (!bot.placeBet(betAmount)) {
+                addLog(`Failed to place bet of $${betAmount.toFixed(2)}`, 'loss');
+                return;
+            }
+            
+            // Start game
+            const crashPoint = game.startGame();
+            gamesPlayed++;
+            
+            // Simulate game progress
+            let cashedOut = false;
+            let gameLoop = setInterval(() => {
+                const state = game.update();
+                
+                // Update display
+                updateUI();
+                
+                // Bot decision
+                if (bot.isPlaying && bot.shouldCashOut(state.multiplier) && !cashedOut) {
+                    const winnings = bot.cashOut(state.multiplier);
+                    clearInterval(gameLoop);
+                    cashedOut = true;
+                    
+                    const profit = winnings - betAmount;
+                    addLog(`Game ${bot.stats.gamesPlayed}: Cashed out at ${state.multiplier.toFixed(2)}x | Won: $${winnings.toFixed(2)} (${profit >= 0 ? '+' : ''}${profit.toFixed(2)})`, 'win');
+                    
+                    // Adjust betting strategy periodically
+                    if (bot.stats.gamesPlayed % 10 === 0) {
+                        bot.adjustBetting();
+                        betAmountInput.value = bot.betAmount.toFixed(2);
+                    }
+                }
+                
+                // Check for crash
+                if (state.crashed && !cashedOut) {
+                    clearInterval(gameLoop);
+                    bot.isPlaying = false;
+                    bot.currentBet = 0.0;
+                    bot.stats.gamesPlayed++;
+                    bot.stats.losses++;
+                    bot.stats.totalProfit -= betAmount;
+                    
+                    addLog(`Game ${bot.stats.gamesPlayed}: Crashed at ${crashPoint.toFixed(2)}x | Lost: $${betAmount.toFixed(2)}`, 'loss');
+                    
+                    updateUI();
+                    
+                    // Adjust betting after loss
+                    bot.adjustBetting();
+                    betAmountInput.value = bot.betAmount.toFixed(2);
+                }
+            }, 50); // Update every 50ms
+            
+            // Auto-stop game after 10 seconds (in case of bug)
+            setTimeout(() => {
+                if (game.gameActive) {
+                    game.forceCrash();
+                    clearInterval(gameLoop);
+                }
+            }, 10000);
+        }
+        
+        // Start auto-play
+        function startAutoPlay() {
+            if (isAutoPlaying) return;
+            
+            isAutoPlaying = true;
+            gamesPlayed = 0;
+            targetGames = parseInt(gamesToPlayInput.value) || 50;
+            
+            // Update bot settings
+            bot.betAmount = parseFloat(betAmountInput.value);
+            bot.autoCashout = parseFloat(autoCashoutInput.value);
+            bot.updateStrategy(botStrategySelect.value);
+            
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            
+            addLog(`Starting auto-play for ${targetGames} games with ${bot.strategy} strategy`, 'info');
+            addLog(`Bet: $${bot.betAmount.toFixed(2)}, Auto-cashout: ${bot.autoCashout}x`, 'info');
+            
+            // Play first game immediately
+            playGame();
+            
+            // Set interval for subsequent games (with delay between games)
+            autoPlayInterval = setInterval(() => {
+                if (!game.gameActive && isAutoPlaying) {
+                    playGame();
+                }
+            }, 2000); // 2 seconds between games
+        }
+        
+        // Stop auto-play
+        function stopAutoPlay() {
+            isAutoPlaying = false;
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+            
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            
+            addLog('Auto-play stopped', 'info');
+        }
+        
+        // Reset simulation
+        function resetSimulation() {
+            stopAutoPlay();
+            
+            game = new AviatorGame();
+            bot = new AviatorBot(1000);
+            gamesPlayed = 0;
+            
+            // Reset UI
+            betAmountInput.value = '10';
+            autoCashoutInput.value = '2.0';
+            botStrategySelect.value = 'moderate';
+            gamesToPlayInput.value = '50';
+            
+            // Update strategy cards
+            strategyCards.forEach(card => {
+                card.classList.remove('active');
+                if (card.dataset.strategy === 'moderate') {
+                    card.classList.add('active');
+                }
+            });
+            
+            // Clear log
+            gameLog.innerHTML = `
+                <div class="log-entry log-info">Simulation reset</div>
+                <div class="log-entry log-info">Welcome to Aviator Bot Simulation</div>
+                <div class="log-entry log-info">Set your parameters and click "Start Auto-Play"</div>
+            `;
+            
+            updateUI();
+            addLog('Simulation reset to initial state', 'info');
+        }
+        
+        // Event Listeners
+        startBtn.addEventListener('click', startAutoPlay);
+        stopBtn.addEventListener('click', stopAutoPlay);
+        resetBtn.addEventListener('click', resetSimulation);
+        
+        // Strategy selection
+        botStrategySelect.addEventListener('change', function() {
+            bot.updateStrategy(this.value);
+            
+            // Update active strategy card
+            strategyCards.forEach(card => {
+                card.classList.remove('active');
+                if (card.dataset.strategy === this.value) {
+                    card.classList.add('active');
+                }
+            });
+            
+            // Update auto-cashout based on strategy
+            switch(this.value) {
+                case 'conservative':
+                    autoCashoutInput.value = '1.8';
+                    break;
+                case 'moderate':
+                    autoCashoutInput.value = '2.5';
+                    break;
+                case 'aggressive':
+                    autoCashoutInput.value = '5.0';
+                    break;
+            }
+            
+            addLog(`Strategy changed to: ${this.value}`, 'info');
+        });
+        
+        // Strategy card clicks
+        strategyCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const strategy = this.dataset.strategy;
+                botStrategySelect.value = strategy;
+                
+                // Trigger change event
+                botStrategySelect.dispatchEvent(new Event('change'));
+            });
+        });
+        
+        // Input validation
+        betAmountInput.addEventListener('change', function() {
+            let value = parseFloat(this.value);
+            if (value < 1) value = 1;
+            if (value > 1000) value = 1000;
+            this.value = value;
+            bot.betAmount = value;
+        });
+        
+        autoCashoutInput.addEventListener('change', function() {
+            let value = parseFloat(this.value);
+            if (value < 1.1) value = 1.1;
+            if (value > 100) value = 100;
+            this.value = value.toFixed(1);
+            bot.autoCashout = value;
+        });
+        
+        // Initialize UI
+        updateUI();
+        
+        // Animation loop for multiplier display
+        function gameLoop() {
+            updateUI();
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+    </script>
+</body>
+</html>
